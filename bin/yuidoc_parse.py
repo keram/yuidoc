@@ -62,26 +62,32 @@ class DocParser(object):
             return content + fileStr
 
         def parseDir(path):
-            subdirs = []
             dircontent = ""
-            dirfiles = os.listdir(path)
-            dirfiles.sort()
-            for i in dirfiles:
-                # Checking for directories that start with a '.'
-                # Windows doesn't hide these directories by default
-                if not i.startswith('.'):
-                    # Checking for known bad directory: CVS
-                    if i != 'CVS':
-                        fullname = os.path.join(path, i)
-                        if os.path.isdir(fullname):
-                            subdirs.append(fullname)
-                        else:
-                            for ext in self.extension_check:
-                                if i.lower().endswith(ext):
-                                    dircontent += parseFile(path, i)
 
-            for i in subdirs:
-                dircontent += parseDir(i)
+            if os.path.isdir(path):
+                subdirs = []
+                dirfiles = os.listdir(path)
+                dirfiles.sort()
+                for i in dirfiles:
+                    # Checking for directories that start with a '.'
+                    # Windows doesn't hide these directories by default
+                    if not i.startswith('.'):
+                        # Checking for known bad directory: CVS
+                        if i != 'CVS':
+                            fullname = os.path.join(path, i)
+                            if os.path.isdir(fullname):
+                                subdirs.append(fullname)
+                            else:
+                                for ext in self.extension_check:
+                                    if i.lower().endswith(ext):
+                                        dircontent += parseFile(path, i)
+
+                for i in subdirs:
+                    dircontent += parseDir(i)
+
+            elif os.path.isfile(path):
+                file = os.path.basename(path)
+                dircontent += parseFile(os.path.dirname(path), file)
 
             return dircontent
 
